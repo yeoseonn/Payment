@@ -23,4 +23,20 @@
         WHERE
             id = #{id}
     </update>
+
+    <insert id="insertPayCurInfo" parameterType="com.payment.model.PayReqInfo">
+        INSERT INTO pay_cur_info(
+             pay_type
+            ,payment_id
+            ,cur_vat
+            ,cur_pay_amount
+            ,plan_month
+        )VALUES(
+            #{payType}
+            ,#{paymentId}
+            ,#{vat}
+            ,#{payAmount}
+            ,#{planMonth}
+        )
+    </insert>
 </mapper>

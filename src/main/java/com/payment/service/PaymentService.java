@@ -44,6 +44,7 @@ public class PaymentService {
 
         //update paymentId
         paymentDao.updatePaymentIdReq(payReqInfo);
+        paymentDao.insertPayCurInfo(payReqInfo);
 
         return new PaymentResponse(ResultType.SUCCESS, paymentId);
     }
