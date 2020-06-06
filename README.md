@@ -45,10 +45,41 @@ ex)
 * 입력정보의 길이 제한은 Spring의 Validation을 사용하고, db column의 사이즈로도 제한합니다. 
 
 
-### 2. 취소 API 
+### 2. 취소 API (전체, 부분 취소)
 /api/cancel
+URI 기능 : 부가가치세 정보를 넘기지 않는 경우, 결제데이터의 부가가치세 금액으로 취소합니다
+전체 취소/ 부분 취소 기능을 제공합니다. 
+
+```
+Request Param format : json
+ex)
+{
+    "paymentId": "20060622470000000001",
+    "payAmount": 10000,
+    "vat": 1000
+}
+
+Response format : 
+{
+    "resultType": "SUCCESS",
+    "payType": "PARTIAL_CANCEL",
+    "paymentId": "20060622580000000002",
+    "remainPayAmount": 10000,
+    "remainVat": 909
+}
+```
+
+* paymentId 는 관리번호로, 최초 결제시 부여받은 관리번호 입니다 .
+* pay_cur_info에는 해당관리번호에 잔여하는? 존재하는 남은금액, 남은 vat를 저장합니다. 
+* pay_req_info에는 취소 요청에 대한 고유번호를 생성하고, 기존 관리번호(결제 고유 번호) , 기존관리번호의 processed data를 저장합니다. 
+* response에는 취소 요청에 대한 고유번호, 취소의 분류(전체 or 부분),잔여 금액 및 vat 를 포함합니다.
+* com.payment.service.PaymentService.checkValidCancelRequest 메서드 내에서 모든 취소 가능 여부를 확인하며
+throw하는 Exception은 Custom Exception으로, GlobalExceptionHandler를 구현하여 처리합니다. 
+* pay_cur_info에 현재상태가 PAYMENT이고(취소를 한적이 없는 상태), 결제금액이 취소금액과 같으면 전체 취소입니다.
 
 
+
+* 선택문제의 TestCase1,2,3 은 PaymentApiControllerTest의 testCase01,02,03에 구현하였습니다. 
 
 ### 3.멀티쓰레드 전략 
 
