@@ -11,12 +11,14 @@
     <groupId>com</groupId>
     <artifactId>payment</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <properties>
+        <jar.finalName>paymentAPI</jar.finalName>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+    </properties>
     <name>payment</name>
     <description>kakaopay assignment</description>
 
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
 
     <dependencies>
         <dependency>
