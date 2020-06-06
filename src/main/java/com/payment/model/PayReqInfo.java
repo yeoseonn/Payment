@@ -1,16 +1,17 @@
 package com.payment.model;
 
 import com.payment.common.code.RequestPayType;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PayReqInfo {
     private int id;
 
@@ -41,7 +42,6 @@ public class PayReqInfo {
     /**
      * 결제 금액 or 취소 금액
      */
-    @Length(min = 100, max = 100_000_000)
     @NotNull
     private int payAmount;
 

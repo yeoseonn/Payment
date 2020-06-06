@@ -1,5 +1,42 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.payment.dao.PaymentDao">
+    <insert id="insertPayReqInfo" parameterType="com.payment.model.PayReqInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pay_req_info(
+             pay_type
+             ,pay_amount
+             ,vat
+             ,plan_month
+         )VALUES(
+            #{payType}
+            ,#{payAmount}
+            ,#{vat}
+            ,#{planMonth}
+            )
+    </insert>
 
+    <update id="updatePaymentIdReq" parameterType="com.payment.model.PayReqInfo">
+        UPDATE
+            pay_req_info
+        SET
+            payment_id = #{paymentId}
+            ,processed_data = #{processedData}
+        WHERE
+            id = #{id}
+    </update>
 
+    <insert id="insertPayCurInfo" parameterType="com.payment.model.PayReqInfo">
+        INSERT INTO pay_cur_info(
+             pay_type
+            ,payment_id
+            ,cur_vat
+            ,cur_pay_amount
+            ,plan_month
+        )VALUES(
+            #{payType}
+            ,#{paymentId}
+            ,#{vat}
+            ,#{payAmount}
+            ,#{planMonth}
+        )
+    </insert>
 </mapper>

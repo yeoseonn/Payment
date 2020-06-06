@@ -14,18 +14,18 @@ public class DataProcessingUtilsTest {
     @Test
     public void processingDataUtilTest(){
         String encryptedTestCardData =StringUtils.rightPad("TESTT",300,"*");
-
-        PayReqInfo payReqInfo = new PayReqInfo();
-        payReqInfo.setPayType(RequestPayType.PAYMENT);
-        payReqInfo.setPaymentId("20060523300000000001");
-        payReqInfo.setCardNum("1234567890");
-        payReqInfo.setPlanMonth("3");
-        payReqInfo.setCvc("232");
-        payReqInfo.setPeriod("2302");
-        payReqInfo.setPayAmount(29_900);
-        payReqInfo.setVat(0);
-        payReqInfo.setOriginPaymentId(null);
-        payReqInfo.setEncryptedCardData(encryptedTestCardData);
+        PayReqInfo payReqInfo = PayReqInfo.builder()
+                .payType(RequestPayType.PAYMENT)
+                .payAmount(299_900)
+                .cardNum("0123456789")
+                .paymentId("20060523300000000001")
+                .cvc("222")
+                .period("2312")
+                .planMonth("12")
+                .vat(0)
+                .originPaymentId(null)
+                .encryptedCardData(encryptedTestCardData)
+                .build();
 
         String processedData = DataProcessingUtils.processPayRequestData(payReqInfo);
         assertEquals(450,processedData.length());

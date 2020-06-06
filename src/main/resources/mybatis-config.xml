@@ -11,6 +11,6 @@
     </settings>
 
     <mappers>
-        <mapper resource="mybatis/mappers/paymentMapper.xml"/>
+        <mapper resource="mapper/paymentMapper.xml"/>
     </mappers>
 </configuration>
