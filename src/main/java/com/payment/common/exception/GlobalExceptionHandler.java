@@ -2,8 +2,7 @@ package com.payment.common.exception;
 
 import com.payment.common.code.ErrorCode;
 import com.payment.common.model.BasicErrorResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,14 +13,21 @@ import javax.validation.ConstraintViolationException;
 import java.util.Iterator;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    @ResponseBody
+    public BasicErrorResponse handleIllegalArgumentException(IllegalArgumentException e){
+        log.error(e.getMessage(),e);
+        return new BasicErrorResponse(ErrorCode.VALIDATION_ERROR.getErrorType(),e.getMessage());
+    }
+
 
     @ExceptionHandler(value = ConstraintViolationException.class)
     @ResponseBody
     public BasicErrorResponse handleValidationCheckException(ConstraintViolationException exception) {
-        logger.error("Valiadation Fail ", getResultMessage(exception.getConstraintViolations().iterator()));
+        log.error("Valiadation Fail ", getResultMessage(exception.getConstraintViolations().iterator()));
         return new BasicErrorResponse(ErrorCode.VALIDATION_ERROR);
     }
 
