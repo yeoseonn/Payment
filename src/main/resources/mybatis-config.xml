@@ -1,0 +1,16 @@
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "HTTP://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting value="true" name="cacheEnabled"/>
+        <setting value="true" name="lazyLoadingEnabled"/>
+        <setting value="true" name="aggressiveLazyLoading"/>
+        <setting value="true" name="useGeneratedKeys"/>
+        <setting value="SIMPLE" name="defaultExecutorType"/>
+        <setting value="600" name="defaultStatementTimeout"/>
+        <setting value="true" name="mapUnderscoreToCamelCase"/>
+    </settings>
+
+    <mappers>
+        <mapper resource="mybatis/mappers/paymentMapper.xml"/>
+    </mappers>
+</configuration>
