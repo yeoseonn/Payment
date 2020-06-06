@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum PayType {
     PAYMENT("Payment"),
     ALL_CANCEL("All_Cancel"),
-    PARTIAL_CALCEL("Parital_Cancel");
+    PARTIAL_CANCEL("Parital_Cancel");
 
     private String payType;
 
