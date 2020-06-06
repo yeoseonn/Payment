@@ -1,5 +1,6 @@
 package com.payment.model;
 
+import com.payment.common.code.PayType;
 import com.payment.common.code.RequestPayType;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
@@ -37,7 +38,7 @@ public class PayReqInfo {
     /**
      *  부가가치세 or 취소 부가가치세 (optional)
      */
-    private int vat;
+    private Integer vat;
 
     /**
      * 결제 금액 or 취소 금액
@@ -49,6 +50,7 @@ public class PayReqInfo {
      * 할부 금액 0 : 일시불, 1~12
      */
     @Length(max = 2)
+    @NotNull
     private String planMonth;
 
 
@@ -85,5 +87,14 @@ public class PayReqInfo {
      */
     @Length(max=450)
     private String processedData;
+
+    public PayReqInfo(PayCancelReq payCancelReq){
+        this.originPaymentId = payCancelReq.getPaymentId();
+        this.payAmount = payCancelReq.getPayAmount();
+        this.vat = payCancelReq.getVat();
+        this.payType = payType;
+        this.payType = RequestPayType.CANCEL;
+        this.planMonth  = "00";
+    }
 
 }

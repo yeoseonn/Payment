@@ -1,7 +1,7 @@
 package com.payment.dao;
 
+import com.payment.model.PayCurInfo;
 import com.payment.model.PayReqInfo;
-import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -16,13 +16,20 @@ public class PaymentDao {
         return payReqInfo.getId();
     }
 
-    public int updatePaymentIdReq(PayReqInfo payReqInfo){
-        return sqlSessionTemplate.update("updatePaymentIdReq",payReqInfo);
+    public int updatePayReqInfo(PayReqInfo payReqInfo){
+        return sqlSessionTemplate.update("updatePayReqInfo",payReqInfo);
     }
 
     public int insertPayCurInfo(PayReqInfo payReqInfo){
         return sqlSessionTemplate.insert("insertPayCurInfo",payReqInfo);
     }
 
+    public PayCurInfo selectPayCurInfo(String paymentId){
+        return sqlSessionTemplate.selectOne("selectPayCurInfo",paymentId);
+    }
+
+    public int updatePayCurInfo(PayCurInfo payCurInfo){
+        return sqlSessionTemplate.update("updatePayCurInfo",payCurInfo);
+    }
 
 }

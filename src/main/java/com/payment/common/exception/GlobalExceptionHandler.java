@@ -3,6 +3,8 @@ package com.payment.common.exception;
 import com.payment.common.code.ErrorCode;
 import com.payment.common.model.BasicErrorResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,11 +18,12 @@ import java.util.Iterator;
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = IllegalArgumentException.class)
+    @ExceptionHandler(value = IllegalRequestException.class)
     @ResponseBody
-    public BasicErrorResponse handleIllegalArgumentException(IllegalArgumentException e){
+    public ResponseEntity<BasicErrorResponse> handleIllegalArgumentException(IllegalRequestException e){
         log.error(e.getMessage(),e);
-        return new BasicErrorResponse(ErrorCode.VALIDATION_ERROR.getErrorType(),e.getMessage());
+        BasicErrorResponse errorResponse = new BasicErrorResponse(ErrorCode.VALIDATION_ERROR.getErrorType(),e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 

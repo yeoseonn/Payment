@@ -2,8 +2,13 @@ package com.payment.common.model;
 
 import com.payment.common.code.ErrorCode;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class BasicErrorResponse {
     private String code;
     private String message;

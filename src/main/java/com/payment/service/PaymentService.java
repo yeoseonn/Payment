@@ -1,9 +1,11 @@
 package com.payment.service;
 
 import com.payment.common.code.ErrorCode;
+import com.payment.common.code.PayType;
 import com.payment.common.code.RequestPayType;
 import com.payment.common.code.ResultType;
 import com.payment.common.exception.IllegalRequestException;
+import com.payment.common.model.CancelResponse;
 import com.payment.common.model.PaymentResponse;
 import com.payment.common.utils.CryptoUtils;
 import com.payment.common.utils.DataProcessingUtils;
@@ -11,6 +13,8 @@ import com.payment.common.utils.PaymentIdGenerator;
 import com.payment.common.utils.VatCalUtils;
 import com.payment.dao.PaymentDao;
 import com.payment.model.Card;
+import com.payment.model.PayCancelReq;
+import com.payment.model.PayCurInfo;
 import com.payment.model.PayReqInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +38,7 @@ public class PaymentService {
     public PaymentResponse payment(PayReqInfo paramPayReq) {
         PayReqInfo payReqInfo = checkVatAndPayAmount(paramPayReq);
         payReqInfo.setPayType(RequestPayType.PAYMENT);
+
         //autoIncrement Id 생성하여 payment unique Id 생성
         int id = paymentDao.insertPayReqInfo(payReqInfo);
         payReqInfo.setId(id);
@@ -43,9 +48,8 @@ public class PaymentService {
         payReqInfo.setPaymentId(paymentId);
 
         //update paymentId
-        paymentDao.updatePaymentIdReq(payReqInfo);
+        paymentDao.updatePayReqInfo(payReqInfo);
         paymentDao.insertPayCurInfo(payReqInfo);
-
         return new PaymentResponse(ResultType.SUCCESS, paymentId);
     }
 
@@ -58,7 +62,7 @@ public class PaymentService {
      */
     private PayReqInfo checkVatAndPayAmount(PayReqInfo paramPayReq) {
         PayReqInfo payReqInfo = paramPayReq;
-        if (payReqInfo.getVat() == 0) {
+        if (payReqInfo.getVat() == null) {
             payReqInfo.setVat(VatCalUtils.getVatWithoutOption(payReqInfo.getPayAmount()));
         } else if (payReqInfo.getPayAmount() < payReqInfo.getVat()) {
             throw new IllegalRequestException(ErrorCode.VALIDATION_ERROR, "VAT is larger than Pay Amount");
@@ -108,4 +112,61 @@ public class PaymentService {
         return new Card(cardTokens[0], cardTokens[1], cardTokens[2]);
     }
 
+
+    /**
+     * 결제 취소 요청
+     *
+     * @param paramReq
+     * @return
+     */
+    public CancelResponse cancel(PayCancelReq paramReq) {
+        if (paramReq.getVat() == null) {
+            paramReq.setVat(VatCalUtils.getVatWithoutOption(paramReq.getPayAmount()));
+        }
+        PayCurInfo payCurInfo = paymentDao.selectPayCurInfo(paramReq.getPaymentId());
+        checkValidCancelRequest(paramReq, payCurInfo);
+
+
+        //거래 요청 데이터 생성 및 paymentId, processedData 업데이트
+        PayReqInfo payReqInfo = new PayReqInfo(paramReq);
+        int id = paymentDao.insertPayReqInfo(payReqInfo);
+        payReqInfo.setPaymentId(PaymentIdGenerator.generatePaymentId(id));
+        payReqInfo.setProcessedData(payCurInfo.getProcessedData());
+        paymentDao.updatePayReqInfo(payReqInfo);
+
+        PayType requestPayType = PayType.PARTIAL_CANCEL;
+        if (payCurInfo.getPayType() == PayType.PAYMENT && payCurInfo.getCurPayAmount() == paramReq.getPayAmount()) { // 전체 취소의 조건
+            requestPayType = PayType.ALL_CANCEL;
+        }
+        payCurInfo.setCurPayAmount(payCurInfo.getCurPayAmount() - paramReq.getPayAmount());
+        payCurInfo.setCurVat(payCurInfo.getCurVat() - paramReq.getVat());
+        payCurInfo.setPayType(requestPayType);
+        paymentDao.updatePayCurInfo(payCurInfo);
+
+        return new CancelResponse(ResultType.SUCCESS, requestPayType, payReqInfo.getPaymentId(), payCurInfo.getCurPayAmount(), payCurInfo.getCurVat());
+    }
+
+    /**
+     * 취소 요청 금액이 유효한지 확인
+     *
+     * @param payCancelReq
+     * @param payCurInfo
+     */
+    public void checkValidCancelRequest(PayCancelReq payCancelReq, PayCurInfo payCurInfo) {
+        if (payCurInfo.getCurPayAmount() == 0) {
+            throw new IllegalRequestException(ErrorCode.CANCEL_NOT_AVALIABLE, "Existing Pay Amount is 0");
+        }
+
+        if (payCurInfo.getCurPayAmount() < payCancelReq.getPayAmount()) {
+            throw new IllegalRequestException(ErrorCode.CANCEL_NOT_AVALIABLE, "Cancel Pay Amount cannot be larger than Existing Pay Amount");
+        }
+
+        if (payCurInfo.getCurVat() < payCancelReq.getVat()) {
+            throw new IllegalRequestException(ErrorCode.CANCEL_NOT_AVALIABLE, "Cancel Vat cannot be larger than Existing Vat");
+        }
+
+        if (payCurInfo.getCurPayAmount() == payCancelReq.getPayAmount() && payCurInfo.getCurVat() > payCancelReq.getVat()) {
+            throw new IllegalRequestException(ErrorCode.CANCEL_NOT_AVALIABLE, "total vat is remain!");
+        }
+    }
 }

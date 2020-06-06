@@ -46,4 +46,6 @@ public class PayCurInfo {
      */
     private String updated;
 
+    private String processedData;
+
 }

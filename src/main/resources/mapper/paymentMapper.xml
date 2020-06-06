@@ -14,7 +14,7 @@
             )
     </insert>
 
-    <update id="updatePaymentIdReq" parameterType="com.payment.model.PayReqInfo">
+    <update id="updatePayReqInfo" parameterType="com.payment.model.PayReqInfo">
         UPDATE
             pay_req_info
         SET
@@ -39,4 +39,30 @@
             ,#{planMonth}
         )
     </insert>
+
+    <select id="selectPayCurInfo" parameterType="java.lang.String" resultType="com.payment.model.PayCurInfo">
+        SELECT
+             pc.payment_id AS paymentId
+            ,pc.cur_vat AS curVat
+            ,pc.cur_pay_amount AS curPayAmount
+            ,pc.plan_month AS planMonth
+            ,pc.pay_type AS payType
+            ,pr.processed_data AS processedData
+        FROM
+            pay_cur_info pc
+            INNER JOIN pay_req_info pr ON pc.payment_id = pr.payment_id
+        WHERE
+            pr.payment_id = #{paymentId}
+    </select>
+
+    <update id="updatePayCurInfo" parameterType="com.payment.model.PayCurInfo">
+        UPDATE
+            pay_cur_info
+        SET
+             cur_vat = #{curVat}
+            ,cur_pay_amount = #{curPayAmount}
+            ,pay_type = #{payType}
+        WHERE
+            payment_id = #{paymentId}
+    </update>
 </mapper>
