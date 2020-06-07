@@ -173,6 +173,10 @@ public class PaymentService {
     }
 
     public PayInfoResponse getPaymentInfo(String paymentId) {
+        if (paymentId.length() != 20) {
+            throw new IllegalRequestException(ErrorCode.VALIDATION_ERROR, "Payment Id length must be 20");
+        }
+
         PayReqInfo payReqInfo = paymentDao.selectPayReqInfoByPaymentId(paymentId);
         if (payReqInfo == null) {
             throw new IllegalRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Cannot Find Payment Info");

@@ -99,6 +99,7 @@ public class PaymentApiControllerTest {
     /**
      * 실패 test
      * vat가 더 큰 경우
+     *
      * @throws Exception
      */
     @Test
@@ -278,6 +279,12 @@ public class PaymentApiControllerTest {
         mvcResult = callPayInfoAPI(cancelPaymentId).andDo(print()).andReturn();
         payInfoResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), PayInfoResponse.class);
         assertEquals(RequestPayType.CANCEL, payInfoResponse.getPayType());
+    }
+
+    @Test
+    public void getPayInfoValidationCheck() throws Exception {
+        MvcResult mvcResult = callPayInfoAPI("").andDo(print()).andReturn();
+        mvcResult = callPayInfoAPI("123").andDo(print()).andExpect(status().is4xxClientError()).andReturn();
     }
 
     @Test
