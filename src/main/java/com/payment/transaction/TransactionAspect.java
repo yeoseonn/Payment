@@ -7,6 +7,7 @@ import com.payment.model.PayCancelReq;
 import com.payment.model.PayReqInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -32,13 +33,13 @@ public class TransactionAspect {
 
     }
 
-    @AfterReturning("execution(* com.payment.service.PaymentService.payment(..))")
+    @After("execution(* com.payment.service.PaymentService.payment(..))")
     public void paymentAfter(JoinPoint joinPoint) {
         log.info("-----------After Payment-------------");
         PayReqInfo payReqInfo = (PayReqInfo) joinPoint.getArgs()[0];
         CurrentPayData.cardDataMap.remove(payReqInfo.getCardNum());
-        log.info(payReqInfo.getCardNum() + "is Done");
     }
+
 
     @Before("execution(* com.payment.service.PaymentService.cancel(..))")
     public void cancelBefore(JoinPoint joinPoint) {
@@ -51,7 +52,7 @@ public class TransactionAspect {
         }
     }
 
-    @AfterReturning("execution(* com.payment.service.PaymentService.cancel(..))")
+    @After("execution(* com.payment.service.PaymentService.cancel(..))")
     public void cacncelAfter(JoinPoint joinPoint) {
         log.info("-----------After Cancel-------------");
         PayCancelReq payCancelReq = (PayCancelReq) joinPoint.getArgs()[0];

@@ -108,6 +108,16 @@ Response format :
 
 ### 4.멀티쓰레드 전략 
 
+* 서버가 한대라는 가정하에 구현하였습니다. 
+* com.payment.transcation.CurrentPayData 라는 class에 static한 concurrentHashMap을 선언하여 현재의 결제 중인 카드정보, 취소 중인 결제고유정보를 각각 저장합니다. 
+* Aop를 사용하여 payment 요청, cancel 요청 에 따른 수행 전에 cardNum, paymentId를 concurrentHashMap에 Put하고, 요청 수행이 완료되면 map에서 삭제합니다. 
+( 이 때 완료는 @AfterReturning annotation사용으로 요청이 성공한 경우에만 수행됩니다.)
+
+* 만약 payment 요청 시 map에 동일한 cardNum을 요청한다면 정의한 Error를 반환합니다. cancel역시 요청중인 결제고유 번호가 있다면 Error를 반환합니다. 
+
+* Test Code는 PaymentApiControllerTest의 multiThreadingTest() 에 구현하였습니다. 
+
+
 
 ## 빌드 및 실행 방법
   Maven Build 

@@ -13,7 +13,7 @@ public class DataProcessingUtilsTest {
 
     @Test
     public void processingDataUtilTest() {
-        String encryptedTestCardData = StringUtils.rightPad("TESTT", 300, "*");
+        String encryptedTestCardData = "TEST";
         PayReqInfo payReqInfo = PayReqInfo.builder()
                 .payType(RequestPayType.PAYMENT)
                 .payAmount(299_900)

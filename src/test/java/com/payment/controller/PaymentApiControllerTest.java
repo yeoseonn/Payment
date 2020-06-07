@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.PaymentApplication;
 import com.payment.common.code.ErrorCode;
 import com.payment.common.code.RequestPayType;
+import com.payment.common.code.ResultType;
 import com.payment.common.model.BasicErrorResponse;
 import com.payment.common.model.CancelResponse;
 import com.payment.common.model.PayInfoResponse;
@@ -92,7 +93,7 @@ public class PaymentApiControllerTest {
 
         String returnVal = mvcResult.getResponse().getContentAsString();
         PaymentResponse paymentResponse = objectMapper.readValue(returnVal, PaymentResponse.class);
-        assertEquals(nowDateTime + idWithPad, paymentResponse.getPaymentId());
+        assertEquals(ResultType.SUCCESS, paymentResponse.getResultType());
     }
 
     /**
@@ -294,17 +295,17 @@ public class PaymentApiControllerTest {
         MvcResult mvcResult = callPaymentAPI(payReqInfo).andDo(print()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info(basicErrorResponse.getMessage());
-        assertEquals(ErrorCode.PAYMENT_NOT_AVAILABLE.getErrorType(),basicErrorResponse.getCode());
+        assertEquals(ErrorCode.PAYMENT_NOT_AVAILABLE.getErrorType(), basicErrorResponse.getCode());
 
 
         String paymentId = "20060711590000000001";
         PayCancelReq payCancelReq = new PayCancelReq(paymentId, 10_000, 1_000);
-        CurrentPayData.paymentIdMap.put(paymentId,payCancelReq);
+        CurrentPayData.paymentIdMap.put(paymentId, payCancelReq);
 
         mvcResult = callCancelAPI(payCancelReq).andReturn();
         basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info(basicErrorResponse.getMessage());
-        assertEquals(ErrorCode.CANCEL_NOT_AVALIABLE.getErrorType(),basicErrorResponse.getCode());
+        assertEquals(ErrorCode.CANCEL_NOT_AVALIABLE.getErrorType(), basicErrorResponse.getCode());
 
     }
 

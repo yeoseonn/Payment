@@ -16,9 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
     </properties>
-    <name>payment</name>
-    <description>kakaopay assignment</description>
-
 
     <dependencies>
         <dependency>
@@ -83,6 +80,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+        <finalName>
+            paymentAPI
+        </finalName>
     </build>
 
 </project>
