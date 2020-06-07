@@ -98,7 +98,7 @@ public class PaymentApiControllerTest {
 
     /**
      * 실패 test
-     *
+     * vat가 더 큰 경우
      * @throws Exception
      */
     @Test
@@ -112,7 +112,7 @@ public class PaymentApiControllerTest {
                 .planMonth("12")
                 .build();
 
-        callPaymentAPI(payReqInfo).andDo(print()).andExpect(status().is5xxServerError());
+        callPaymentAPI(payReqInfo).andDo(print()).andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -147,12 +147,12 @@ public class PaymentApiControllerTest {
         assertEquals(600, cancelResponse.getRemainVat());
 
         payCancelReq = new PayCancelReq(paymentId, 7000);
-        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
+        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is4xxClientError()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("700/null 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
         payCancelReq = new PayCancelReq(paymentId, 6600, 700);
-        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
+        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is4xxClientError()).andReturn();
         basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("6600/700 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
@@ -164,7 +164,7 @@ public class PaymentApiControllerTest {
         assertEquals(0, cancelResponse.getRemainVat());
 
         payCancelReq = new PayCancelReq(paymentId, 100);
-        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
+        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is4xxClientError()).andReturn();
         basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("100/null 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
     }
@@ -193,7 +193,7 @@ public class PaymentApiControllerTest {
         assertEquals(909, cancelResponse.getRemainVat());
 
         payCancelReq = new PayCancelReq(paymentId, 10_000, 0);
-        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
+        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is4xxClientError()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("10000/0 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
@@ -230,7 +230,7 @@ public class PaymentApiControllerTest {
         assertEquals(818, cancelResponse.getRemainVat());
 
         payCancelReq = new PayCancelReq(paymentId, 10_000, 909);
-        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
+        mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is4xxClientError()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("10000/909 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
