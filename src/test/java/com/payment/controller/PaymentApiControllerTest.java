@@ -2,6 +2,7 @@ package com.payment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.PaymentApplication;
+import com.payment.common.code.ErrorCode;
 import com.payment.common.code.RequestPayType;
 import com.payment.common.model.BasicErrorResponse;
 import com.payment.common.model.CancelResponse;
@@ -10,6 +11,7 @@ import com.payment.common.model.PaymentResponse;
 import com.payment.common.utils.DataProcessingUtils;
 import com.payment.model.PayCancelReq;
 import com.payment.model.PayReqInfo;
+import com.payment.transaction.CurrentPayData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -275,6 +277,35 @@ public class PaymentApiControllerTest {
         mvcResult = callPayInfoAPI(cancelPaymentId).andDo(print()).andReturn();
         payInfoResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), PayInfoResponse.class);
         assertEquals(RequestPayType.CANCEL, payInfoResponse.getPayType());
+    }
+
+    @Test
+    public void multiThreadingTest() throws Exception {
+        String cardNum = "0123456789";
+        PayReqInfo payReqInfo = PayReqInfo.builder()
+                .payAmount(299_900)
+                .cardNum(cardNum)
+                .cvc("222")
+                .period("2312")
+                .planMonth("12")
+                .build();
+        CurrentPayData.cardDataMap.put(cardNum, payReqInfo); //먼저 같은 카드번호의 요청이 수행중이라고 가정
+
+        MvcResult mvcResult = callPaymentAPI(payReqInfo).andDo(print()).andReturn();
+        BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
+        log.info(basicErrorResponse.getMessage());
+        assertEquals(ErrorCode.PAYMENT_NOT_AVAILABLE.getErrorType(),basicErrorResponse.getCode());
+
+
+        String paymentId = "20060711590000000001";
+        PayCancelReq payCancelReq = new PayCancelReq(paymentId, 10_000, 1_000);
+        CurrentPayData.paymentIdMap.put(paymentId,payCancelReq);
+
+        mvcResult = callCancelAPI(payCancelReq).andReturn();
+        basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
+        log.info(basicErrorResponse.getMessage());
+        assertEquals(ErrorCode.CANCEL_NOT_AVALIABLE.getErrorType(),basicErrorResponse.getCode());
+
     }
 
 

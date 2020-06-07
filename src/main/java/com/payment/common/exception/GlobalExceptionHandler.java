@@ -22,7 +22,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ResponseEntity<BasicErrorResponse> handleIllegalArgumentException(IllegalRequestException e){
         log.error(e.getMessage(),e);
-        BasicErrorResponse errorResponse = new BasicErrorResponse(ErrorCode.VALIDATION_ERROR.getErrorType(),e.getMessage());
+        BasicErrorResponse errorResponse = new BasicErrorResponse(e.getErrorCode().getErrorType(),e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
