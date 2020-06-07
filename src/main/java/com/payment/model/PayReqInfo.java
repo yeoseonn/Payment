@@ -82,6 +82,8 @@ public class PayReqInfo {
     @NotNull
     private String cvc;
 
+    private String created;
+
     /**
      * 거래 데이터 명세
      */

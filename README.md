@@ -17,7 +17,8 @@ pay_cur_info : 최종 결제 결과 정보를 저장
 ## 문제해결 전략
 
 ### 1. 결제 API 
-URI : /api/payment
+POST /api/payment
+
 API 기능 : 카드정보과 금액정보를 입력받아서 카드사와 협의된 string 데이터로 DB에 저장합니다.
 
 ```
@@ -46,8 +47,9 @@ ex)
 
 
 ### 2. 취소 API (전체, 부분 취소)
-/api/cancel
-URI 기능 : 부가가치세 정보를 넘기지 않는 경우, 결제데이터의 부가가치세 금액으로 취소합니다
+PUT /api/cancel
+
+API 기능 : 부가가치세 정보를 넘기지 않는 경우, 결제데이터의 부가가치세 금액으로 취소합니다
 전체 취소/ 부분 취소 기능을 제공합니다. 
 
 ```
@@ -81,7 +83,30 @@ throw하는 Exception은 Custom Exception으로, GlobalExceptionHandler를 구�
 
 * 선택문제의 TestCase1,2,3 은 PaymentApiControllerTest의 testCase01,02,03에 구현하였습니다. 
 
-### 3.멀티쓰레드 전략 
+### 3. 조회 API 
+GET /api/{paymentId}
+
+API 기능 : DB에 저장된 데이터를 조회해서 응답값으로 만들어줍니다
+(pay_req_info에서 조회합니다.)
+
+```
+Response format : 
+{
+    "paymentId": "20060710450000000001",
+    "card": {
+        "cardNum": "123456*******567",
+        "period": "2312",
+        "cvc": "222"
+    },
+    "payType": "PAYMENT",
+    "payAmount": 20000,
+    "vat": 1818,
+    "approvalDate": "2020-06-07 10:45:16.544"
+}
+
+```
+
+### 4.멀티쓰레드 전략 
 
 
 ## 빌드 및 실행 방법

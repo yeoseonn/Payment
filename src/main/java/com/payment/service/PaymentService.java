@@ -6,6 +6,7 @@ import com.payment.common.code.RequestPayType;
 import com.payment.common.code.ResultType;
 import com.payment.common.exception.IllegalRequestException;
 import com.payment.common.model.CancelResponse;
+import com.payment.common.model.PayInfoResponse;
 import com.payment.common.model.PaymentResponse;
 import com.payment.common.utils.CryptoUtils;
 import com.payment.common.utils.DataProcessingUtils;
@@ -42,10 +43,11 @@ public class PaymentService {
         //autoIncrement Id 생성하여 payment unique Id 생성
         int id = paymentDao.insertPayReqInfo(payReqInfo);
         payReqInfo.setId(id);
-        payReqInfo.setEncryptedCardData(getEncryptedCardData(payReqInfo));
-        payReqInfo.setProcessedData(DataProcessingUtils.processPayRequestData(payReqInfo));
         String paymentId = PaymentIdGenerator.generatePaymentId(payReqInfo.getId());
         payReqInfo.setPaymentId(paymentId);
+
+        payReqInfo.setEncryptedCardData(getEncryptedCardData(payReqInfo));
+        payReqInfo.setProcessedData(DataProcessingUtils.processPayRequestData(payReqInfo));
 
         //update paymentId
         paymentDao.updatePayReqInfo(payReqInfo);
@@ -168,5 +170,18 @@ public class PaymentService {
         if (payCurInfo.getCurPayAmount() == payCancelReq.getPayAmount() && payCurInfo.getCurVat() > payCancelReq.getVat()) {
             throw new IllegalRequestException(ErrorCode.CANCEL_NOT_AVALIABLE, "total vat is remain!");
         }
+    }
+
+    public PayInfoResponse getPaymentInfo(String paymentId) {
+        PayReqInfo payReqInfo = paymentDao.selectPayReqInfoByPaymentId(paymentId);
+        if (payReqInfo == null) {
+            throw new IllegalRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Cannot Find Payment Info");
+        }
+
+        String cardData = DataProcessingUtils.getEncrytedCardDataFromProcessedData(payReqInfo.getProcessedData());
+        Card card = getDecryptedCardData(cardData);
+
+        return new PayInfoResponse(paymentId, card, payReqInfo.getPayType(), payReqInfo.getPayAmount(), payReqInfo.getVat(), payReqInfo.getCreated());
+
     }
 }

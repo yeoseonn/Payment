@@ -65,4 +65,19 @@
         WHERE
             payment_id = #{paymentId}
     </update>
+
+    <select id="selectPayReqInfoByPaymentId" parameterType="java.lang.String" resultType="com.payment.model.PayReqInfo">
+        SELECT
+            payment_id AS paymentId
+            ,pay_type AS payType
+            ,vat
+            ,pay_amount AS payAmount
+            ,plan_month AS planMonth
+            ,processed_data AS processedData
+            ,created
+        FROM
+            pay_req_info
+        WHERE
+            payment_id = #{paymentId}
+    </select>
 </mapper>

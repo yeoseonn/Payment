@@ -11,25 +11,28 @@ public class PaymentDao {
     @Autowired
     SqlSessionTemplate sqlSessionTemplate;
 
-    public int insertPayReqInfo (PayReqInfo payReqInfo){
-        sqlSessionTemplate.insert("insertPayReqInfo",payReqInfo);
+    public int insertPayReqInfo(PayReqInfo payReqInfo) {
+        sqlSessionTemplate.insert("insertPayReqInfo", payReqInfo);
         return payReqInfo.getId();
     }
 
-    public int updatePayReqInfo(PayReqInfo payReqInfo){
-        return sqlSessionTemplate.update("updatePayReqInfo",payReqInfo);
+    public int updatePayReqInfo(PayReqInfo payReqInfo) {
+        return sqlSessionTemplate.update("updatePayReqInfo", payReqInfo);
     }
 
-    public int insertPayCurInfo(PayReqInfo payReqInfo){
-        return sqlSessionTemplate.insert("insertPayCurInfo",payReqInfo);
+    public int insertPayCurInfo(PayReqInfo payReqInfo) {
+        return sqlSessionTemplate.insert("insertPayCurInfo", payReqInfo);
     }
 
-    public PayCurInfo selectPayCurInfo(String paymentId){
-        return sqlSessionTemplate.selectOne("selectPayCurInfo",paymentId);
+    public PayCurInfo selectPayCurInfo(String paymentId) {
+        return sqlSessionTemplate.selectOne("selectPayCurInfo", paymentId);
     }
 
-    public int updatePayCurInfo(PayCurInfo payCurInfo){
-        return sqlSessionTemplate.update("updatePayCurInfo",payCurInfo);
+    public int updatePayCurInfo(PayCurInfo payCurInfo) {
+        return sqlSessionTemplate.update("updatePayCurInfo", payCurInfo);
     }
 
+    public PayReqInfo selectPayReqInfoByPaymentId(String paymentId) {
+        return sqlSessionTemplate.selectOne("selectPayReqInfoByPaymentId", paymentId);
+    }
 }
