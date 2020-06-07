@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DataProcessingUtils {
     private static final String STRING_PAD = "_";
     private static final String NUMBER_PAD = "0";
+    private static final String MASKING = "*";
 
     /**
      * Spec에 명시되어있는 String Data 제공
@@ -40,6 +41,21 @@ public class DataProcessingUtils {
      * @return
      */
     public static String getEncrytedCardDataFromProcessedData(String processedData) {
-        return processedData.substring(103, 403);
+        String encryptedCardData = processedData.substring(103, 403);
+        return encryptedCardData.substring(0, encryptedCardData.indexOf(STRING_PAD));
+    }
+
+    /**
+     * 앞 6자리와 뒤 3자리를 제외한 나머지를 마스킹처리
+     *
+     * @return
+     */
+    public static String maskingCardNum(String cardNumParam) {
+        String cardNum = cardNumParam;
+
+        int length = cardNum.length();
+        String masking = StringUtils.repeat(MASKING, length - 9);
+        String str = cardNum.substring(0, 6) + masking + cardNum.substring(length - 3, length);
+        return str;
     }
 }

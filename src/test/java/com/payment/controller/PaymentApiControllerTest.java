@@ -2,9 +2,12 @@ package com.payment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.PaymentApplication;
+import com.payment.common.code.RequestPayType;
 import com.payment.common.model.BasicErrorResponse;
 import com.payment.common.model.CancelResponse;
+import com.payment.common.model.PayInfoResponse;
 import com.payment.common.model.PaymentResponse;
+import com.payment.common.utils.DataProcessingUtils;
 import com.payment.model.PayCancelReq;
 import com.payment.model.PayReqInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +29,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,7 +52,7 @@ public class PaymentApiControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
-    public ResultActions callPaymentAPI(PayReqInfo payReqInfo) throws Exception {
+    private ResultActions callPaymentAPI(PayReqInfo payReqInfo) throws Exception {
         String requestString = objectMapper.writeValueAsString(payReqInfo);
         return mockMvc.perform(post("/api/payment")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,12 +60,18 @@ public class PaymentApiControllerTest {
                 .content(requestString));
     }
 
-    public ResultActions callCancelAPI(PayCancelReq payCancelReq) throws Exception {
+    private ResultActions callCancelAPI(PayCancelReq payCancelReq) throws Exception {
         String requestString = objectMapper.writeValueAsString(payCancelReq);
         return mockMvc.perform(put("/api/cancel")
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8.toString())
                 .content(requestString));
+    }
+
+    private ResultActions callPayInfoAPI(String paymentId) throws Exception {
+        return mockMvc.perform(get("/api/" + paymentId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.toString()));
     }
 
     @Test
@@ -145,7 +153,7 @@ public class PaymentApiControllerTest {
         basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("6600/700 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
-        payCancelReq = new PayCancelReq(paymentId, 6600,600);
+        payCancelReq = new PayCancelReq(paymentId, 6600, 600);
         mvcResult = callCancelAPI(payCancelReq).andReturn();
         cancelResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), CancelResponse.class);
         log.info("6600/600 취소 요청 status : " + cancelResponse.getResultType());
@@ -181,12 +189,12 @@ public class PaymentApiControllerTest {
         assertEquals(10_000, cancelResponse.getRemainPayAmount());
         assertEquals(909, cancelResponse.getRemainVat());
 
-        payCancelReq = new PayCancelReq(paymentId, 10_000,0);
+        payCancelReq = new PayCancelReq(paymentId, 10_000, 0);
         mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("10000/0 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
-        payCancelReq = new PayCancelReq(paymentId, 10_000,909);
+        payCancelReq = new PayCancelReq(paymentId, 10_000, 909);
         mvcResult = callCancelAPI(payCancelReq).andReturn();
         cancelResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), CancelResponse.class);
         log.info("10000/909 취소 요청 status : " + cancelResponse.getResultType());
@@ -218,17 +226,55 @@ public class PaymentApiControllerTest {
         assertEquals(10_000, cancelResponse.getRemainPayAmount());
         assertEquals(818, cancelResponse.getRemainVat());
 
-        payCancelReq = new PayCancelReq(paymentId, 10_000,909);
+        payCancelReq = new PayCancelReq(paymentId, 10_000, 909);
         mvcResult = callCancelAPI(payCancelReq).andDo(print()).andExpect(status().is5xxServerError()).andReturn();
         BasicErrorResponse basicErrorResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), BasicErrorResponse.class);
         log.info("10000/909 취소 요청 실패 메세지 : " + basicErrorResponse.getMessage());
 
-        payCancelReq = new PayCancelReq(paymentId, 10_000,null);
+        payCancelReq = new PayCancelReq(paymentId, 10_000, null);
         mvcResult = callCancelAPI(payCancelReq).andReturn();
         cancelResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), CancelResponse.class);
         log.info("10000/909 취소 요청 status : " + cancelResponse.getResultType());
         assertEquals(0, cancelResponse.getRemainPayAmount());
         assertEquals(0, cancelResponse.getRemainVat());
+    }
+
+    @Test
+    public void getPayInfo() throws Exception {
+        String cardNum = "1234567891234567";
+        int paymentReqAmount = 20_000;
+        PayReqInfo payReqInfo = PayReqInfo.builder()
+                .payAmount(paymentReqAmount)
+                .vat(null)
+                .cardNum(cardNum)
+                .cvc("222")
+                .period("2312")
+                .planMonth("12")
+                .build();
+        MvcResult mvcResult = callPaymentAPI(payReqInfo).andReturn();
+        PaymentResponse paymentResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), PaymentResponse.class);
+        String paymentId = paymentResponse.getPaymentId();
+        log.info("20000 결제 요청 관리 번호 : " + paymentId);
+
+
+        PayCancelReq payCancelReq = new PayCancelReq(paymentId, 10_000, 1_000);
+        mvcResult = callCancelAPI(payCancelReq).andReturn();
+        CancelResponse cancelResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), CancelResponse.class);
+        log.info("10000/0 취소 요청 status : " + cancelResponse.getResultType());
+        assertEquals(10_000, cancelResponse.getRemainPayAmount());
+        assertEquals(818, cancelResponse.getRemainVat());
+        String cancelPaymentId = cancelResponse.getPaymentId();
+
+        //결제 고유번호로 조회
+        mvcResult = callPayInfoAPI(paymentId).andDo(print()).andReturn();
+        PayInfoResponse payInfoResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), PayInfoResponse.class);
+        assertEquals(DataProcessingUtils.maskingCardNum(cardNum), payInfoResponse.getCard().getCardNum());
+        assertEquals(paymentReqAmount, payInfoResponse.getPayAmount());
+
+        //취소 고유번호로 조회
+        mvcResult = callPayInfoAPI(cancelPaymentId).andDo(print()).andReturn();
+        payInfoResponse = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), PayInfoResponse.class);
+        assertEquals(RequestPayType.CANCEL, payInfoResponse.getPayType());
     }
 
 

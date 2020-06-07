@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DataProcessingUtilsTest {
 
     @Test
-    public void processingDataUtilTest(){
-        String encryptedTestCardData =StringUtils.rightPad("TESTT",300,"*");
+    public void processingDataUtilTest() {
+        String encryptedTestCardData = StringUtils.rightPad("TESTT", 300, "*");
         PayReqInfo payReqInfo = PayReqInfo.builder()
                 .payType(RequestPayType.PAYMENT)
                 .payAmount(299_900)
@@ -28,11 +28,19 @@ public class DataProcessingUtilsTest {
                 .build();
 
         String processedData = DataProcessingUtils.processPayRequestData(payReqInfo);
-        assertEquals(450,processedData.length());
+        assertEquals(450, processedData.length());
 
         // 가공된 length 450의 데이터 중 , encryptedCardData를 추출
-        assertEquals(encryptedTestCardData,DataProcessingUtils.getEncrytedCardDataFromProcessedData(processedData));
+        assertEquals(encryptedTestCardData, DataProcessingUtils.getEncrytedCardDataFromProcessedData(processedData));
     }
 
+    @Test
+    public void cardMaskingTest() {
+        String returnVal = DataProcessingUtils.maskingCardNum("1234567890");
+        assertEquals("123456*890",returnVal);
+
+        returnVal = DataProcessingUtils.maskingCardNum("1234567891234567");
+        assertEquals("123456*******567",returnVal);
+    }
 
 }
